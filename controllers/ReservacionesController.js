@@ -1,39 +1,72 @@
-const db = require('../data/db');
+const pool = require('../config/database');
 
 class ReservacionesController {
-    static agregar(req, res) {
-        const nuevaReservacion = {
-            id: db.reservaciones.length + 1,
-            cliente: req.body.cliente,
-            funcionId: parseInt(req.body.funcionId),
-            tickets: req.body.tickets || [] // Array de IDs de tickets (ej: [1, 2])
-        };
-        db.reservaciones.push(nuevaReservacion);
-        res.status(201).json(nuevaReservacion);
+    static async listar(req, res) {
+        try {
+            const [reservaciones] = await pool.query('SELECT * FROM reservaciones ORDER BY fecha_reserva DESC');
+            res.render('reservaciones/index', { reservaciones });
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
     }
 
-    static editar(req, res) {
-        const index = db.reservaciones.findIndex(r => r.id === parseInt(req.params.id));
-        if (index === -1) return res.status(404).json({ message: "Reservación no encontrada" });
-        db.reservaciones[index] = { ...db.reservaciones[index], ...req.body };
-        res.status(200).json(db.reservaciones[index]);
+    static async agregar(req, res) {
+        try {
+            const { nombre_cliente, fecha_reserva } = req.body;
+
+            const fechaParaMySQL = fecha_reserva.replace('T', ' ') + ':00';
+
+            await pool.query(
+                'INSERT INTO reservaciones (nombre_cliente, fecha_reserva) VALUES (?, ?)', 
+                [nombre_cliente, fechaParaMySQL]
+            );
+            res.redirect('/reservaciones');
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
     }
 
-    static eliminar(req, res) {
-        db.reservaciones = db.reservaciones.filter(r => r.id !== parseInt(req.params.id));
-        res.status(200).json({ message: "Reservación eliminada" });
+    static async mostrarEditar(req, res) {
+        try {
+            const [rows] = await pool.query('SELECT * FROM reservaciones WHERE id = ?', [req.params.id]);
+            if (rows.length === 0) return res.status(404).send("Reservación no encontrada");
+            
+            const r = rows[0];
+            if (r.fecha_reserva) {
+                const date = new Date(r.fecha_reserva);
+                date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                r.fecha_formateada = date.toISOString().slice(0, 16);
+            }
+
+            res.render('reservaciones/editar', { reservacion: r });
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
     }
 
-    static removerTicket(req, res) {
-        const reservacion = db.reservaciones.find(r => r.id === parseInt(req.params.id));
-        if (!reservacion) return res.status(404).json({ message: "Reservación no encontrada" });
-        
-        const ticketId = parseInt(req.params.ticketId);
-        // Filtramos para dejar por fuera el ticket que queremos desvincular (romper relación)
-        reservacion.tickets = reservacion.tickets.filter(tId => tId !== ticketId);
-        
-        res.status(200).json({ message: "Relación eliminada: Ticket removido", reservacion });
+    static async editar(req, res) {
+        try {
+            const { nombre_cliente, fecha_reserva } = req.body;
+
+            const fechaParaMySQL = fecha_reserva.replace('T', ' ') + ':00';
+
+            await pool.query(
+                'UPDATE reservaciones SET nombre_cliente = ?, fecha_reserva = ? WHERE id = ?', 
+                [nombre_cliente, fechaParaMySQL, req.params.id]
+            );
+            res.redirect('/reservaciones');
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    }
+
+    static async eliminar(req, res) {
+        try {
+            await pool.query('DELETE FROM reservaciones WHERE id = ?', [req.params.id]);
+            res.redirect('/reservaciones');
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
     }
 }
-
 module.exports = ReservacionesController;
