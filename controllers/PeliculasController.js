@@ -1,45 +1,57 @@
-const db = require('../data/db');
+const pool = require('../config/database');
 
 class PeliculasController {
-    static listar(req, res) {
-        res.status(200).json(db.peliculas);
+    static async listar(req, res) {
+        try {
+            const [peliculas] = await pool.query('SELECT * FROM peliculas');
+            res.render('peliculas/index', { peliculas });
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
     }
 
-    static obtenerPorId(req, res) {
-        const peli = db.peliculas.find(p => p.id === parseInt(req.params.id));
-        if (!peli) return res.status(404).json({ message: "Película no encontrada" });
-        res.status(200).json(peli);
+    static async agregar(req, res) {
+        try {
+            const { titulo, genero, duracion } = req.body;
+            await pool.query('INSERT INTO peliculas (titulo, genero, duracion) VALUES (?, ?, ?)', [titulo, genero, parseInt(duracion)]);
+            res.redirect('/peliculas');
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
     }
 
-    static ultimasCinco(req, res) {
-        // Ordena las películas por año de estreno (de más nueva a más vieja) y toma 5
-        const peliculasOrdenadas = [...db.peliculas].sort((a, b) => b.anio - a.anio);
-        res.status(200).json(peliculasOrdenadas.slice(0, 5));
+    static async mostrarEditar(req, res) {
+        try {
+            const [rows] = await pool.query('SELECT * FROM peliculas WHERE id = ?', [req.params.id]);
+            if (rows.length === 0) return res.status(404).send("Película no encontrada");
+            
+            // Renderiza una nueva vista pasándole los datos de esa película específica
+            res.render('peliculas/editar', { pelicula: rows[0] });
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
     }
 
-    static agregar(req, res) {
-        const nuevaPelicula = {
-            id: db.peliculas.length + 1,
-            titulo: req.body.titulo,
-            anio: parseInt(req.body.anio),
-            genero: req.body.genero
-        };
-        db.peliculas.push(nuevaPelicula);
-        res.status(201).json(nuevaPelicula);
+    static async editar(req, res) {
+        try {
+            const { titulo, genero, duracion } = req.body;
+            await pool.query(
+                'UPDATE peliculas SET titulo = ?, genero = ?, duracion = ? WHERE id = ?',
+                [titulo, genero, parseInt(duracion), req.params.id]
+            );
+            res.redirect('/peliculas');
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
     }
 
-    static editar(req, res) {
-        const index = db.peliculas.findIndex(p => p.id === parseInt(req.params.id));
-        if (index === -1) return res.status(404).json({ message: "Película no encontrada" });
-        
-        db.peliculas[index] = { ...db.peliculas[index], ...req.body };
-        res.status(200).json(db.peliculas[index]);
-    }
-
-    static eliminar(req, res) {
-        db.peliculas = db.peliculas.filter(p => p.id !== parseInt(req.params.id));
-        res.status(200).json({ message: "Película eliminada correctamente" });
+    static async eliminar(req, res) {
+        try {
+            await pool.query('DELETE FROM peliculas WHERE id = ?', [req.params.id]);
+            res.redirect('/peliculas');
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
     }
 }
-
 module.exports = PeliculasController;
