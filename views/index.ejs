@@ -1,11 +1,29 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Cine</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f9; }
+        h1 { color: #333; }
+        .menu { display: flex; justify-content: center; gap: 20px; margin-top: 30px; flex-wrap: wrap; }
+        .btn { text-decoration: none; padding: 15px 30px; color: white; border-radius: 5px; font-weight: bold; font-size: 18px; transition: 0.3s; }
+        .btn-pelis { background: #2b2b2b; }
+        .btn-salas { background: #d35400; }
+        .btn-res { background: #27ae60; }
+        .btn-func { background: #1a5276; }
+        .btn:hover { opacity: 0.8; transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <h1>Panel de Administración del Cine</h1>
+    <p>Selecciona el módulo que deseas gestionar hoy:</p>
+    
+    <div class="menu">
+        <a href="/peliculas" class="btn btn-pelis">Películas</a>
+        <a href="/salas" class="btn btn-salas">Salas</a>
+        <a href="/reservaciones" class="btn btn-res">Reservaciones</a>
+        <a href="/funciones" class="btn btn-func">Funciones</a>
+    </div>
+</body>
 </html>
