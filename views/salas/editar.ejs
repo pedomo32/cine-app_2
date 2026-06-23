@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Editar Sala</title>
+    <style>body{font-family:Arial;padding:20px;} .card{background:white;padding:20px;border-radius:8px;max-width:400px;border:1px solid #ddd;} input{display:block;width:90%;padding:10px;margin-bottom:15px;}</style>
+</head>
+<body>
+    <h1>Editar Sala</h1>
+    <div class="card">
+        <form action="/salas/<%= sala.id %>?_method=PUT" method="POST">
+            <label>Nombre de la sala:</label>
+            <input type="text" name="nombre" value="<%= sala.nombre %>" required>
+            <label>Capacidad:</label>
+            <input type="number" name="capacidad" value="<%= sala.capacidad %>" required>
+            <button type="submit" style="background:#007bff; color:white; border:none; padding:10px 15px; font-weight:bold; cursor:pointer;">Actualizar Cambios</button>
+            <a href="/salas" style="margin-left: 15px; color:#555;">Cancelar</a>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Salas</title>
+    <style>body{font-family:Arial;padding:20px;} table{width:100%;border-collapse:collapse;margin-top:20px;} th,td{border:1px solid #ddd;padding:10px;} th{background:#d35400;color:white;} .card{margin-bottom:20px;padding:20px;border:1px solid #ccc;}</style>
+</head>
+<body>
+    <h1>Gestión de Salas</h1>
+    
+    <div class="card">
+        <h3>Registrar Nueva Sala</h3>
+        <form action="/salas" method="POST">
+            <input type="text" name="nombre" placeholder="Nombre (Ej: Sala 1)" required>
+            <input type="number" name="capacidad" placeholder="Capacidad" required>
+            <button type="submit" style="background:#e67e22; color:white; border:none; padding:8px 15px; cursor:pointer;">Guardar Sala</button>
+        </form>
+    </div>
+
+    <table>
+        <tr><th>ID</th><th>Nombre</th><th>Capacidad</th><th>Acciones</th></tr>
+        <% salas.forEach(s => { %>
+        <tr>
+            <td><%= s.id %></td><td><%= s.nombre %></td><td><%= s.capacidad %> personas</td>
+            <td>
+                <a href="/salas/<%= s.id %>/editar"><button style="background:#007bff; color:white; border:none; padding:5px 10px; cursor:pointer;">Editar</button></a>
+                <form action="/salas/<%= s.id %>?_method=DELETE" method="POST" style="display:inline;">
+                    <button type="submit" style="background:#dc3545; color:white; border:none; padding:5px 10px; cursor:pointer;">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        <% }) %>
+    </table>
+    <br><a href="/">Volver al inicio</a>
+</body>
+</html>
